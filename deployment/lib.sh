@@ -367,6 +367,11 @@ function create_webapp()
   az group deployment create -g ${resource_group} --template-file ./arm/linux-webapp.json \
                             --parameters "{\"location\": {\"value\": \"${location}\"}}" \
                             --query "{id:id,name:name,provisioningState:properties.provisioningState,resourceGroup:resourceGroup}"
+
+  # Config to disable built-in image, which will be rejected by the jenkins app service plugin.
+  # Use a docker hub image instead to provision. It will be replaced by a custom image during deploy.
+  local name=$(az resource list -g ${resource_group} --resource-type Microsoft.Web/sites --query [0].name | tr -d '"')
+  az webapp config set -g ${resource_group} -n ${name} --linux-fx-version "DOCKER|NGINX"
 }
 
 ##############################################################################
@@ -492,7 +497,9 @@ function create_secrets_in_jenkins_kubernetes() {
   if [ -n "$(kubectl get secret my-secrets --ignore-not-found)" ]; then
     kubectl delete secret my-secrets
   fi
-  kubectl create secret generic my-secrets --from-literal=jenkinsPassword=${JENKINS_PASSWORD} --save-config
+  kubectl create secret generic my-secrets --save-config \
+                                    --from-literal=jenkinsPassword=${JENKINS_PASSWORD} \
+                                    --from-literal=acrPassword=${ACR_PASSWORD}
 
   if [ -n "$(kubectl get secret kube-config --ignore-not-found)" ]; then
     kubectl delete secret kube-config
@@ -505,7 +512,11 @@ function create_secrets_in_jenkins_kubernetes() {
   kubectl create configmap my-config --save-config \
                                     --from-literal=githubRepoOwner=${GITHUB_REPO_OWNER} \
                                     --from-literal=githubRepoName=${GITHUB_REPO_NAME} \
-                                    --from-literal=groupSuffix=${GROUP_SUFFIX}
+                                    --from-literal=groupSuffix=${GROUP_SUFFIX} \
+                                    --from-literal=webAppNameEastUS=${EAST_US_WEBAPP_NAME} \
+                                    --from-literal=webAppNameWestEurope=${WEST_EUROPE_WEBAPP_NAME} \
+                                    --from-literal=acrName=${ACR_NAME} \
+                                    --from-literal=acrUsername=${ACR_USERNAME}
 }
 
 ##############################################################################
