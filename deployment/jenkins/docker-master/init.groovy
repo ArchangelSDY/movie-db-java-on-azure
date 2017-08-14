@@ -95,6 +95,11 @@ void addKubeCredential(String credentialId) {
     SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), kubeCredential)
 }
 
+void addACRCredential(String credentialId, String username, String password) {
+    def acrCredential = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, credentialId, 'Azure Container Registry', username, password)
+    SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), acrCredential)
+}
+
 /**
  * Configure Kubernetes plugin
  */
@@ -118,7 +123,10 @@ void configureKubernetes() {
     volumes.add(new SecretVolume ('/home/jenkins/.kube', 'kube-config'))
 
     def envVars = new ArrayList<PodEnvVar>()
-    envVars.add(new PodEnvVar('GROUP_SUFFIX', "${env.GROUP_SUFFIX}"))
+    envVars.add(new PodEnvVar('GROUP_SUFFIX', env.GROUP_SUFFIX))
+    envVars.add(new PodEnvVar('WEBAPP_NAME_EAST_US', env.WEBAPP_NAME_EAST_US))
+    envVars.add(new PodEnvVar('WEBAPP_NAME_WEST_EUROPE', env.WEBAPP_NAME_WEST_EUROPE))
+    envVars.add(new PodEnvVar('ACR_NAME', env.ACR_NAME))
 
     def pod = new PodTemplate('jnlp', 'microsoft/java-on-azure-jenkins-slave', volumes)
     pod.setEnvVars(envVars)
@@ -143,6 +151,7 @@ Thread.start {
     this.createPipeline(githubRepo, 'prod', 'prod')
     // Configure Kubernetes plugin
     this.configureKubernetes()
+    this.addACRCredential('acr', env.ACR_USERNAME, env.ACR_PASSWORD)
     // Set number of executor to 0 so that slave agents will be created for each build
     this.setExecutorNum(0)
     // Setup security

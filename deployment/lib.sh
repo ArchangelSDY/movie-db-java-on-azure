@@ -505,7 +505,10 @@ function create_secrets_in_jenkins_kubernetes() {
   kubectl create configmap my-config --save-config \
                                     --from-literal=githubRepoOwner=${GITHUB_REPO_OWNER} \
                                     --from-literal=githubRepoName=${GITHUB_REPO_NAME} \
-                                    --from-literal=groupSuffix=${GROUP_SUFFIX}
+                                    --from-literal=groupSuffix=${GROUP_SUFFIX} \
+                                    --from-literal=webAppNameEastUS=${EAST_US_WEBAPP_NAME} \
+                                    --from-literal=webAppNameWestEurope=${WEST_EUROPE_WEBAPP_NAME} \
+                                    --from-literal=acrName=${ACR_NAME}
 }
 
 ##############################################################################

@@ -31,14 +31,14 @@ node {
 
   stage('Deploy') {
     // Deploy function
-    azureUtil.deployFunction()
+    // azureUtil.deployFunction()
 
     // Deploy data app
-    azureUtil.deployDataApp(targetEnv, azureUtil.config.EAST_US_GROUP)
-    azureUtil.deployDataApp(targetEnv, azureUtil.config.WEST_EUROPE_GROUP)
+    // azureUtil.deployDataApp(targetEnv, azureUtil.config.EAST_US_GROUP)
+    // azureUtil.deployDataApp(targetEnv, azureUtil.config.WEST_EUROPE_GROUP)
 
     // Deploy web app
-    azureUtil.deployWebApp(azureUtil.config.EAST_US_GROUP)
-    azureUtil.deployWebApp(azureUtil.config.WEST_EUROPE_GROUP)
+    azureUtil.deployWebApp(azureUtil.config.EAST_US_GROUP, "$WEBAPP_NAME_EAST_US", "web-app/target/docker/Dockerfile")
+    // azureUtil.deployWebApp(azureUtil.config.WEST_EUROPE_GROUP)
   }
 }

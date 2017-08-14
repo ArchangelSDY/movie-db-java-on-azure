@@ -76,7 +76,7 @@ def deployFunction() {
     """
 }
 
-def deployWebApp(String resGroup) {
+def deployWebApp(String resGroup, String appName, String dockerFilePath) {
     sh """
         data_api_endpoint=\$(az network traffic-manager profile list -g ${config.COMMON_GROUP} --query [0].dnsConfig.fqdn | tr -d '"')
         webapp_id=\$(az resource list -g ${resGroup} --resource-type Microsoft.Web/sites --query [0].id | tr -d '"')
@@ -89,7 +89,11 @@ def deployWebApp(String resGroup) {
         redis_name=\$(az redis list -g ${config.COMMON_GROUP} --query [0].name | tr -d '"')
         redis_host=\$(az redis show -g ${config.COMMON_GROUP} -n \${redis_name} --query hostName | tr -d '"')
         redis_password=\$(az redis list-keys -g ${config.COMMON_GROUP} -n \${redis_name} --query primaryKey | tr -d '"')
-        
+    """
+
+    azureWebAppPublish appName: appName, azureCredentialsId: 'azure-sp', dockerFilePath: dockerFilePath, dockerRegistryEndpoint: [credentialsId: "acr", url: "https://${ACR_NAME}.azurecr.io"], publishType: 'docker', resourceGroup: resGroup
+
+    sh """
         az webapp config container set --ids \${webapp_id} \\
                                       --docker-custom-image-name ${acrLoginServer}/web-app \\
                                       --docker-registry-server-url http://${acrLoginServer} \\
