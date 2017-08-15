@@ -88,6 +88,31 @@ items:
                     configMapKeyRef:
                      name: my-config
                      key: groupSuffix
+                - name: WEBAPP_NAME_EAST_US
+                  valueFrom:
+                    configMapKeyRef:
+                     name: my-config
+                     key: webAppNameEastUS
+                - name: WEBAPP_NAME_WEST_EUROPE
+                  valueFrom:
+                    configMapKeyRef:
+                     name: my-config
+                     key: webAppNameWestEurope
+                - name: ACR_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                     name: my-config
+                     key: acrName
+                - name: ACR_USERNAME
+                  valueFrom:
+                    configMapKeyRef:
+                     name: my-config
+                     key: acrUsername
+                - name: ACR_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                     name: my-secrets
+                     key: acrPassword
               volumeMounts:
                 - name: "kube"
                   mountPath: "/root/.kube"
