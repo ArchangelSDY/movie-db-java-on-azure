@@ -1,0 +1,39 @@
+node {
+  stage('Checkout Source') {
+    checkout scm
+  }
+
+  def azureUtil = load './deployment/jenkins/azureutil.groovy'
+  def branchName = scm.branches[0].name.split('/').last()
+  def targetEnv = (branchName in ['test','prod']) ? branchName : 'dev'
+
+  stage('Prepare') {
+    echo "Target environment is: ${targetEnv}"
+    azureUtil.prepareEnv(targetEnv)
+  }
+
+  stage('Build') {
+    sh("cd web-app; mvn compile; cd ..")
+  }
+
+  stage('Test') {
+    sh("cd web-app; mvn test; cd ..")
+  }
+
+  stage('Package') {
+    sh("""
+        cd web-app
+        mvn package
+        cp src/main/docker/base/Dockerfile target/
+        cd ..
+    """)
+  }
+
+  stage('Deploy') {
+    // Deploy web app
+    dir('web-app/target') {
+        azureWebAppPublish appName: "$WEBAPP_NAME_EAST_US", azureCredentialsId: 'azure-sp', dockerFilePath: "Dockerfile", dockerImageName: '', dockerImageTag: '', dockerRegistryEndpoint: [credentialsId: 'acr', url: "https://${ACR_NAME}.azurecr.io"], filePath: '', publishType: 'docker', resourceGroup: azureUtil.config.EAST_US_GROUP, slotName: '', sourceDirectory: '', targetDirectory: ''
+        azureWebAppPublish appName: "$WEBAPP_NAME_WEST_EUROPE", azureCredentialsId: 'azure-sp', dockerFilePath: "Dockerfile", dockerImageName: '', dockerImageTag: '', dockerRegistryEndpoint: [credentialsId: 'acr', url: "https://${ACR_NAME}.azurecr.io"], filePath: '', publishType: 'docker', resourceGroup: azureUtil.config.WEST_EUROPE_GROUP, slotName: '', sourceDirectory: '', targetDirectory: ''
+    }
+  }
+}
