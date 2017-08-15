@@ -1,4 +1,6 @@
 node {
+  properties([parameters([string(defaultValue: 'Azure', name: 'NAME')])])
+
   stage('Checkout Source') {
     checkout scm
   }
@@ -13,7 +15,12 @@ node {
   }
 
   stage('Build') {
-    sh("cd web-app; mvn compile; cd ..")
+    sh("""
+        cd web-app
+        sed -i "s/Azure/${NAME}/g" src/main/resources/templates/index.html
+        mvn clean compile
+        cd ..
+    """)
   }
 
   stage('Test') {
