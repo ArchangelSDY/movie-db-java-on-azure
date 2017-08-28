@@ -119,12 +119,12 @@ def deployDataApp(String targetEnv, String resGroup) {
         kubectl config use-context \${context_name}
 
         # Create private container registry if not exist
-        if [ -z "\$(kubectl get ns ${targetEnv} --ignore-not-found)" ]; then
-          kubectl create ns ${targetEnv} --save-config
+        if [ -z "\$(kubectl --insecure-skip-tls-verify  get ns ${targetEnv} --ignore-not-found)" ]; then
+          kubectl --insecure-skip-tls-verify  create ns ${targetEnv} --save-config
         fi
-        secret_exist=\$(kubectl get secret ${acrLoginServer} --namespace=${targetEnv} --ignore-not-found)
+        secret_exist=\$(kubectl --insecure-skip-tls-verify  get secret ${acrLoginServer} --namespace=${targetEnv} --ignore-not-found)
         if [ -z "\${secret_exist}" ]; then
-          kubectl create secret docker-registry ${acrLoginServer} --namespace=${targetEnv} \\
+          kubectl --insecure-skip-tls-verify  create secret docker-registry ${acrLoginServer} --namespace=${targetEnv} \\
                                                                   --docker-server=${acrLoginServer} \\
                                                                   --docker-username=${acrUsername} \\
                                                                   --docker-password=${acrPassword} \\
@@ -136,7 +136,7 @@ def deployDataApp(String targetEnv, String resGroup) {
         export ACR_LOGIN_SERVER=${acrLoginServer}
         export DATA_APP_CONTAINER_PORT=${config.DATA_APP_CONTAINER_PORT}
         export TARGET_ENV=${targetEnv}
-        envsubst < ./deployment/data-app/deploy.yaml | kubectl apply --namespace=${targetEnv} -f -
+        envsubst < ./deployment/data-app/deploy.yaml | kubectl --insecure-skip-tls-verify  apply --namespace=${targetEnv} -f -
 
         # Check whether there is any redundant IP address
         ip_count=\$(az network public-ip list -g ${resGroup} --query "[?tags.service=='${targetEnv}/data-app'] | length([*])")

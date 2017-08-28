@@ -431,17 +431,17 @@ function create_secrets_in_kubernetes() {
   local resource_group=$1
   local acs_name=$2
 
-  az acs kubernetes get-credentials -g ${resource_group} -n ${acs_name}
+  # az acs kubernetes get-credentials -g ${resource_group} -n ${acs_name}
 
-  if [ -z "$(kubectl get ns ${TARGET_ENV} --ignore-not-found)" ]; then
-    kubectl create ns ${TARGET_ENV} --save-config
+  if [ -z "$(kubectl --insecure-skip-tls-verify get ns ${TARGET_ENV} --ignore-not-found)" ]; then
+    kubectl --insecure-skip-tls-verify create ns ${TARGET_ENV} --save-config
   fi
-  kubectl config set-context $(kubectl config current-context) --namespace=${TARGET_ENV}
+  kubectl --insecure-skip-tls-verify config set-context $(kubectl config current-context) --namespace=${TARGET_ENV}
 
-  if [ -n "$(kubectl get secret my-secrets --ignore-not-found)" ]; then
-    kubectl delete secret my-secrets
+  if [ -n "$(kubectl --insecure-skip-tls-verify get secret my-secrets --ignore-not-found)" ]; then
+    kubectl --insecure-skip-tls-verify delete secret my-secrets
   fi
-  kubectl create secret generic my-secrets --type=string  --save-config \
+  kubectl --insecure-skip-tls-verify create secret generic my-secrets --type=string  --save-config \
                                           --namespace=${TARGET_ENV} \
                                           --from-literal=mysqlEndpoint=${MYSQL_ENDPOINT} \
                                           --from-literal=mysqlUsername=${MYSQL_USERNAME} \
@@ -465,8 +465,8 @@ function deploy_jenkins()
 {
   create_secrets_in_jenkins_kubernetes $1 $2
 
-  if [ -z "$(kubectl get deploy jenkins --ignore-not-found --namespace=jenkins)" ]; then
-    kubectl apply -f ./jenkins/jenkins-master.yaml
+  if [ -z "$(kubectl --insecure-skip-tls-verify get deploy jenkins --ignore-not-found --namespace=jenkins)" ]; then
+    kubectl --insecure-skip-tls-verify apply -f ./jenkins/jenkins-master.yaml
   fi
 
   # Check existence of Jenkins service
@@ -487,29 +487,29 @@ function create_secrets_in_jenkins_kubernetes() {
   local resource_group=$1
   local acs_name=$2
 
-  az acs kubernetes get-credentials -g ${resource_group} -n ${acs_name}
+  # az acs kubernetes get-credentials -g ${resource_group} -n ${acs_name}
 
-  if [ -z "$(kubectl get ns jenkins --ignore-not-found)" ]; then
-    kubectl create ns jenkins --save-config
+  if [ -z "$(kubectl --insecure-skip-tls-verify get ns jenkins --ignore-not-found)" ]; then
+    kubectl --insecure-skip-tls-verify create ns jenkins --save-config
   fi
-  kubectl config set-context $(kubectl config current-context) --namespace=jenkins
+  kubectl --insecure-skip-tls-verify config set-context $(kubectl config current-context) --namespace=jenkins
 
-  if [ -n "$(kubectl get secret my-secrets --ignore-not-found)" ]; then
-    kubectl delete secret my-secrets
+  if [ -n "$(kubectl --insecure-skip-tls-verify get secret my-secrets --ignore-not-found)" ]; then
+    kubectl --insecure-skip-tls-verify delete secret my-secrets
   fi
-  kubectl create secret generic my-secrets --save-config \
+  kubectl --insecure-skip-tls-verify create secret generic my-secrets --save-config \
                                     --from-literal=jenkinsPassword=${JENKINS_PASSWORD} \
                                     --from-literal=acrPassword=${ACR_PASSWORD}
 
-  if [ -n "$(kubectl get secret kube-config --ignore-not-found)" ]; then
-    kubectl delete secret kube-config
+  if [ -n "$(kubectl --insecure-skip-tls-verify get secret kube-config --ignore-not-found)" ]; then
+    kubectl --insecure-skip-tls-verify delete secret kube-config
   fi
-  kubectl create secret generic kube-config --from-file=config=${HOME}/.kube/config
+  kubectl --insecure-skip-tls-verify create secret generic kube-config --from-file=config=${HOME}/.kube/config
 
-  if [ -n "$(kubectl get configMap my-config --ignore-not-found)" ]; then
-    kubectl delete configmap my-config
+  if [ -n "$(kubectl --insecure-skip-tls-verify get configMap my-config --ignore-not-found)" ]; then
+    kubectl --insecure-skip-tls-verify delete configmap my-config
   fi
-  kubectl create configmap my-config --save-config \
+  kubectl --insecure-skip-tls-verify create configmap my-config --save-config \
                                     --from-literal=githubRepoOwner=${GITHUB_REPO_OWNER} \
                                     --from-literal=githubRepoName=${GITHUB_REPO_NAME} \
                                     --from-literal=groupSuffix=${GROUP_SUFFIX} \
@@ -532,7 +532,7 @@ function check_jenkins_readiness()
 {
   while [ 1 ]
   do
-    jenkins_ip=$(kubectl get svc -o jsonpath={.items[*].status.loadBalancer.ingress[0].ip})
+    jenkins_ip=$(kubectl --insecure-skip-tls-verifyget svc -o jsonpath={.items[*].status.loadBalancer.ingress[0].ip})
     if [ -n "${jenkins_ip}" ]; then
       break;
     fi
