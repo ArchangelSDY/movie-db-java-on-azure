@@ -72,9 +72,6 @@ init_database ${c_group}
 
 # Need following env vars to setup kubernetes and jenkins
 export_database_details ${c_group}
-export_acr_details ${c_group}
-export_webapp_details ${e_us_group} EAST_US
-export_webapp_details ${w_eu_group} WEST_EUROPE
 
 print_banner 'Creating secrets and config map in Kubernetes...'
 create_secrets_in_kubernetes ${e_us_group} ${ACS_NAME}

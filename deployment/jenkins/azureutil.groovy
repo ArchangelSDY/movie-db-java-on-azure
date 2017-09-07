@@ -76,8 +76,21 @@ def deployFunction() {
     """
 }
 
-def deployWebApp(String resGroup, String appName, String dockerFilePath) {
-    azureWebAppPublish appName: appName, azureCredentialsId: 'azure-sp', dockerFilePath: dockerFilePath, dockerImageName: '', dockerImageTag: '', dockerRegistryEndpoint: [credentialsId: 'acr', url: "https://${ACR_NAME}.azurecr.io"], filePath: '', publishType: 'docker', resourceGroup: resGroup, slotName: '', sourceDirectory: '', targetDirectory: ''
+def deployWebApp(String resGroup, String dockerFilePath) {
+    def appName = sh(
+            script: "az webapp list -g ${resGroup} --query [0].name | tr -d '\"'",
+            returnStdout: true
+    ).trim()
+
+    sh """
+        az account show
+        echo '-----'
+        az webapp list -g ${resGroup}
+    """
+
+    println("****** webpp name: " + appName)
+
+    azureWebAppPublish appName: appName, azureCredentialsId: 'azure-sp', dockerFilePath: dockerFilePath, dockerImageName: '', dockerImageTag: '', dockerRegistryEndpoint: [credentialsId: 'acr', url: "https://${this.acrName}.azurecr.io"], filePath: '', publishType: 'docker', resourceGroup: resGroup, slotName: '', sourceDirectory: '', targetDirectory: ''
 
     sh """
         data_api_endpoint=\$(az network traffic-manager profile list -g ${config.COMMON_GROUP} --query [0].dnsConfig.fqdn | tr -d '"')

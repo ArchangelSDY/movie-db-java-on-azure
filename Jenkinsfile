@@ -39,8 +39,8 @@ node {
 
     // Deploy web app
     dir('web-app/target') {
-        azureUtil.deployWebApp(azureUtil.config.EAST_US_GROUP, "$WEBAPP_NAME_EAST_US", "docker/Dockerfile")
-        azureUtil.deployWebApp(azureUtil.config.WEST_EUROPE_GROUP, "$WEBAPP_NAME_WEST_EUROPE", "docker/Dockerfile")
+        azureUtil.deployWebApp(azureUtil.config.EAST_US_GROUP, "docker/Dockerfile")
+        azureUtil.deployWebApp(azureUtil.config.WEST_EUROPE_GROUP, "docker/Dockerfile")
     }
   }
 }

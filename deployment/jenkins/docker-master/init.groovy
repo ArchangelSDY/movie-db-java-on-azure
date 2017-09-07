@@ -97,8 +97,18 @@ void addKubeCredential(String credentialId) {
     SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), kubeCredential)
 }
 
-void addACRCredential(String credentialId, String username, String password) {
-    def acrCredential = new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, credentialId, 'Azure Container Registry', username, password)
+void addACRCredential(String credentialId, String configFile) {
+    String content = new File(configFile).text
+    def jsonSlurper = new JsonSlurper()
+    def config = jsonSlurper.parseText(content)
+
+    def acrCredential = new UsernamePasswordCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        credentialId,
+        'Azure Container Registry',
+        config.aadClientId,
+        config.aadClientSecret
+    )
     SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), acrCredential)
 }
 
@@ -147,9 +157,6 @@ void configureKubernetes() {
 
     def envVars = new ArrayList<PodEnvVar>()
     envVars.add(new PodEnvVar('GROUP_SUFFIX', env.GROUP_SUFFIX))
-    envVars.add(new PodEnvVar('WEBAPP_NAME_EAST_US', env.WEBAPP_NAME_EAST_US))
-    envVars.add(new PodEnvVar('WEBAPP_NAME_WEST_EUROPE', env.WEBAPP_NAME_WEST_EUROPE))
-    envVars.add(new PodEnvVar('ACR_NAME', env.ACR_NAME))
 
     def pod = new PodTemplate('jnlp', 'microsoft/java-on-azure-jenkins-slave', volumes)
     pod.setEnvVars(envVars)
@@ -174,11 +181,12 @@ Thread.start {
     this.createPipeline(githubRepo, 'prod', 'prod')
     // Configure Kubernetes plugin
     this.configureKubernetes()
-    this.addACRCredential('acr', env.ACR_USERNAME, env.ACR_PASSWORD)
+    this.addACRCredential('acr', '/etc/kubernetes/azure.json')
     this.addAzureCredential('azure-sp', '/etc/kubernetes/azure.json')
     // Set number of executor to 0 so that slave agents will be created for each build
     this.setExecutorNum(0)
     // Setup security
     this.setupSecurity()
     this.createUser('jenkins', "${env.JENKINS_PASSWORD}", 'jenkins')
+    println('**** Password: ' + env.JENKINS_PASSWORD)
 }

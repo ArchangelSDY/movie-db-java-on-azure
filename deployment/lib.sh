@@ -498,8 +498,7 @@ function create_secrets_in_jenkins_kubernetes() {
     kubectl delete secret my-secrets
   fi
   kubectl create secret generic my-secrets --save-config \
-                                    --from-literal=jenkinsPassword=${JENKINS_PASSWORD} \
-                                    --from-literal=acrPassword=${ACR_PASSWORD}
+                                    --from-literal=jenkinsPassword=${JENKINS_PASSWORD}
 
   if [ -n "$(kubectl get secret kube-config --ignore-not-found)" ]; then
     kubectl delete secret kube-config
@@ -512,11 +511,7 @@ function create_secrets_in_jenkins_kubernetes() {
   kubectl create configmap my-config --save-config \
                                     --from-literal=githubRepoOwner=${GITHUB_REPO_OWNER} \
                                     --from-literal=githubRepoName=${GITHUB_REPO_NAME} \
-                                    --from-literal=groupSuffix=${GROUP_SUFFIX} \
-                                    --from-literal=webAppNameEastUS=${EAST_US_WEBAPP_NAME} \
-                                    --from-literal=webAppNameWestEurope=${WEST_EUROPE_WEBAPP_NAME} \
-                                    --from-literal=acrName=${ACR_NAME} \
-                                    --from-literal=acrUsername=${ACR_USERNAME}
+                                    --from-literal=groupSuffix=${GROUP_SUFFIX}
 }
 
 ##############################################################################
