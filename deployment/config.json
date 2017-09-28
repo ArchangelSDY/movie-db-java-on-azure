@@ -24,22 +24,22 @@
     {
       "comment": "Resource group name for Jenkins.",
       "key": "JENKINS_GROUP",
-      "value": "JenkinsGrp"
+      "value": "JenkinsGroup"
     },
     {
       "comment": "Resource group name for non-regional resources.",
       "key": "COMMON_GROUP",
-      "value": "CommonGrp"
+      "value": "CommonGroup"
     },
     {
       "comment": "Resource group name for East US region.",
       "key": "EAST_US_GROUP",
-      "value": "EUSGrp"
+      "value": "EastUSGroup"
     },
     {
       "comment": "Resource group name for West Europe region.",
       "key": "WEST_EUROPE_GROUP",
-      "value": "WEUGrp"
+      "value": "WestEuropeGroup"
     }
   ],
 
@@ -112,7 +112,7 @@
     {
       "comment": "Optional resource group suffix to avoid naming conflict.",
       "key": "GROUP_SUFFIX",
-      "value": ""
+      "value": "19527"
     }
   ]
 }
