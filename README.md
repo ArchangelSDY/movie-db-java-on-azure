@@ -266,6 +266,11 @@ To enable diagnostics using *OverOps*, use the following steps.
 
 ### Automate continuous integration and continuous deployment (CI/CD) using Jenkins ###
 
+Before you start using Jenkins, please go to Credentials -> System -> Global credentials -> Add Credentials to add credentials with kind 'SSH Username with private key'. The username should be `azureuser` and the private key should be the one used to provision ACS cluster,
+which is usually at `~/.ssh/id_rsa` on your local machine. Please also fill in the ID field with `acs-ssh`. These credentials will be used to contact with ACS cluster.
+
+Then you can use Jenkins to automate your CI/CD:
+
 1. Use an existing Jenkins instance, setup continuous delivery - build and configure pipeline using:
 
    a. A pipeline config file from the cloned repo
