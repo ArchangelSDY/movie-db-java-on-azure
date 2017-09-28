@@ -141,8 +141,14 @@ def deployDataApp(String targetEnv, String resGroup) {
         export ACR_LOGIN_SERVER=${acrLoginServer}
         export DATA_APP_CONTAINER_PORT=${config.DATA_APP_CONTAINER_PORT}
         export TARGET_ENV=${targetEnv}
-        envsubst < ./deployment/data-app/deploy.yaml | kubectl apply --namespace=${targetEnv} -f -
+        # envsubst < ./deployment/data-app/deploy.yaml | kubectl apply --namespace=${targetEnv} -f -
+        envsubst < ./deployment/data-app/deploy.yaml > data-app-deploy.yaml
+        cat data-app-deploy.yaml
+    """
 
+    acsDeploy azureCredentialsId: 'azure-sp', configFilePaths: 'data-app-deploy.yaml', containerService: 'acs | Kubernetes', resourceGroupName: resGroup, sshCredentialsId: 'acs-ssh'
+
+    sh """
         # Check whether there is any redundant IP address
         ip_count=\$(az network public-ip list -g ${resGroup} --query "[?tags.service=='${targetEnv}/data-app'] | length([*])")
         if [ \${ip_count} -gt 1 ]; then
