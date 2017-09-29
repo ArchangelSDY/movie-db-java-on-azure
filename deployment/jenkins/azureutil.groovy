@@ -133,18 +133,24 @@ def deployDataApp(String targetEnv, String resGroup) {
         cat target/fabric8/secrets.yml
         cat target/fabric8/deployment.yml
         cat target/fabric8/service.yml
+
+        # Jenkins plugin doesn't support apply namespace
+        kubectl apply -f target/fabric8/namespace.yml
     """
 
-    def masterHost = sh(
-            script: "az acs show -g ${resGroup} -n 'acs' --query 'masterProfile.fqdn' | tr -d '\"'",
-            returnStdout: true
-    ).trim()
-    print masterHost
+    acsDeploy azureCredentialsId: 'azure-sp', configFilePaths: 'data-app/target/fabric8/namespace.yml', containerService: 'acs | Kubernetes', enableConfigSubstitution: true, resourceGroupName: resGroup, sshCredentialsId: 'acs-ssh'
+    acsDeploy azureCredentialsId: 'azure-sp', configFilePaths: 'data-app/target/fabric8/deployment.yml', containerService: 'acs | Kubernetes', enableConfigSubstitution: true, resourceGroupName: resGroup, sshCredentialsId: 'acs-ssh'
+    acsDeploy azureCredentialsId: 'azure-sp', configFilePaths: 'data-app/target/fabric8/service.yml', containerService: 'acs | Kubernetes', enableConfigSubstitution: true, resourceGroupName: resGroup, sshCredentialsId: 'acs-ssh'
 
-    // acsDeploy azureCredentialsId: 'azure-sp', configFilePaths: 'data-app/target/fabric8/namespace.yml', containerService: 'acs | Kubernetes', resourceGroupName: resGroup, sshCredentialsId: 'acs-ssh'
-    kubernetesDeploy configs: 'data-app/target/fabric8/namespace.yml', credentialsType: 'SSH', kubeConfig: [path: ''], secretName: '', ssh: [sshCredentialsId: 'acs-ssh', sshServer: masterHost], textCredentials: [certificateAuthorityData: '', clientCertificateData: '', clientKeyData: '', serverUrl: 'https://']
-    kubernetesDeploy configs: 'data-app/target/fabric8/deployment.yml', credentialsType: 'SSH', kubeConfig: [path: ''], secretName: '', ssh: [sshCredentialsId: 'acs-ssh', sshServer: masterHost], textCredentials: [certificateAuthorityData: '', clientCertificateData: '', clientKeyData: '', serverUrl: 'https://']
-    kubernetesDeploy configs: 'data-app/target/fabric8/service.yml', credentialsType: 'SSH', kubeConfig: [path: ''], secretName: '', ssh: [sshCredentialsId: 'acs-ssh', sshServer: masterHost], textCredentials: [certificateAuthorityData: '', clientCertificateData: '', clientKeyData: '', serverUrl: 'https://']
+    // Alternatively, we can use kubernetesDeploy, which is more general
+    // def masterHost = sh(
+    //         script: "az acs show -g ${resGroup} -n 'acs' --query 'masterProfile.fqdn' | tr -d '\"'",
+    //         returnStdout: true
+    // ).trim()
+    // print masterHost
+    // kubernetesDeploy configs: 'data-app/target/fabric8/namespace.yml', credentialsType: 'SSH', kubeConfig: [path: ''], secretName: '', ssh: [sshCredentialsId: 'acs-ssh', sshServer: masterHost], textCredentials: [certificateAuthorityData: '', clientCertificateData: '', clientKeyData: '', serverUrl: 'https://']
+    // kubernetesDeploy configs: 'data-app/target/fabric8/deployment.yml', credentialsType: 'SSH', kubeConfig: [path: ''], secretName: '', ssh: [sshCredentialsId: 'acs-ssh', sshServer: masterHost], textCredentials: [certificateAuthorityData: '', clientCertificateData: '', clientKeyData: '', serverUrl: 'https://']
+    // kubernetesDeploy configs: 'data-app/target/fabric8/service.yml', credentialsType: 'SSH', kubeConfig: [path: ''], secretName: '', ssh: [sshCredentialsId: 'acs-ssh', sshServer: masterHost], textCredentials: [certificateAuthorityData: '', clientCertificateData: '', clientKeyData: '', serverUrl: 'https://']
 
     sh """
         # Check whether there is any redundant IP address
